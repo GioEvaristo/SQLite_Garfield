@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Image} from "react-native";
+import { View, Text, TextInput, Button, FlatList, StyleSheet, Image, Pressable } from "react-native";
 import * as SQLite from "expo-sqlite"
 
 export default function App() {
@@ -19,44 +19,47 @@ export default function App() {
 
   useEffect(() => {
     const initDb = async () => {
-      const database: SQLite.SQLiteDatabase = 
-                await SQLite.openDatabaseAsync("contatos.db");
-      setDb(database); 
+      const database: SQLite.SQLiteDatabase =
+        await SQLite.openDatabaseAsync("contatos.db");
+      setDb(database);
       await database.execAsync(`
         CREATE TABLE IF NOT EXISTS contatos ( 
           id INTEGER PRIMARY KEY AUTOINCREMENT, 
           nome TEXT, telefone TEXT, email TEXT 
         ); 
-      `) 
-    }; 
-    initDb(); 
+      `)
+    };
+    initDb();
   }, []);
 
   useEffect(() => {
     carregarContatos();
   }, [db]);
 
-  const adicionarContato = async () =>{
-    if(!db) {
+  const adicionarContato = async () => {
+    if (!db) {
       return;
     }
-    if(nome.trim() === ""){
+    if (nome.trim() === "") {
       return;
     }
-    await db.runAsync("INSERT INTO contatos(nome) VALUES (?);",[nome]);
-    setNome("");
+    await db.runAsync("INSERT INTO contatos(nome, telefone, email) VALUES (?, ?, ?);", [nome, telefone, email]);
+    setNome(nome);
+    setTelefone(telefone);
+    setEmail(email);
+
     carregarContatos();
   }
 
   const carregarContatos = async () => {
-    if(!db) 
+    if (!db)
       return;
     const r = await db.getAllAsync<Contato>("SELECT * FROM contatos;");
     setContatos(r);
-  }  
-  
+  }
+
   const atualizarContato = async (id: number, nome: string, telefone: string, email: string) => {
-    if(!db){
+    if (!db) {
       return;
     }
     await db.runAsync("UPDATE contatos SET nome = ?, telefone = ?, email = ?, WHERE id = ?;", [nome, telefone, email, id]);
@@ -64,7 +67,7 @@ export default function App() {
   }
 
   const deletarContato = async (id: number) => {
-    if(!db){
+    if (!db) {
       return;
     }
     await db.runAsync("DELETE FROM contatos WHERE id = ?;", [id]);
@@ -74,10 +77,10 @@ export default function App() {
   return (
     <View style={styles.container}>
       <View style={styles.logo}>
-        <Image style={{ width: 80, height: 60, }}source={require('./assets/logo-garfield.png')}></Image>
+        <Image style={{ width: 80, height: 60, }} source={require('./assets/logo-garfield.png')}></Image>
         <Text style={styles.titulo}>Contatos do Garfield</Text>
       </View>
-      
+
       <TextInput
         placeholder="Nome do contato"
         value={nome}
@@ -103,12 +106,15 @@ export default function App() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.lista}>
-            <Text>{item.nome}</Text>
-            <Text>{item.telefone}</Text>
-            <Text>{item.email}</Text>
+            <View style={{ flexDirection: "column" }}>
+              <Text>{item.nome}</Text>
+              <Text>{item.telefone}</Text>
+              <Text>{item.email}</Text>
+            </View>
+
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <Button title="Editar" onPress={() => atualizarContato(item.id, "Novo contato")} />
-              <Button title="Excluir" onPress={() => deletarContato(item.id)} />
+              <Pressable onPress={() => atualizarContato(item.id, 'Novo Nome', '(00)00000-0000', 'novo@email.com')}><Image style={{ width: 50, height: 50 }} source={require('./assets/garfield-edit.png')} /></Pressable>
+              <Pressable onPress={() => deletarContato(item.id)}><Image style={{ width: 40, height: 40 }} source={require('./assets/deletar.png')} /></Pressable>
             </View>
           </View>
         )}
@@ -145,6 +151,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ffa502",
+    color: "#fff",
   },
   texto: {
     borderWidth: 1,
