@@ -1,3 +1,6 @@
+// Dupla: Gabriel Machado e Giovanna Fonseca
+// Turma: 3º Informática
+
 import React, { useEffect, useState } from "react";
 import { View, Text, TextInput, FlatList, StyleSheet, Image, Pressable, ScrollView } from "react-native";
 import * as SQLite from "expo-sqlite"
