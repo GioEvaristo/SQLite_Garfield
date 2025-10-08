@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Button, FlatList, StyleSheet, Image, Pressable } from "react-native";
+import { View, Text, TextInput, FlatList, StyleSheet, Image, Pressable, ScrollView } from "react-native";
 import * as SQLite from "expo-sqlite"
 
 export default function App() {
@@ -62,8 +62,9 @@ export default function App() {
     if (!db) {
       return;
     }
-    await db.runAsync("UPDATE contatos SET nome = ?, telefone = ?, email = ?, WHERE id = ?;", [nome, telefone, email, id]);
+    await db.runAsync("UPDATE contatos SET nome = ?, telefone = ?, email = ? WHERE id = ?;", [nome, telefone, email, id]);
     carregarContatos();
+    console.log("atualizado");
   }
 
   const deletarContato = async (id: number) => {
@@ -72,40 +73,44 @@ export default function App() {
     }
     await db.runAsync("DELETE FROM contatos WHERE id = ?;", [id]);
     carregarContatos();
+    console.log("excluido");
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <View style={styles.logo}>
         <Image style={{ width: 80, height: 60, }} source={require('./assets/logo-garfield.png')}></Image>
         <Text style={styles.titulo}>Contatos do Garfield</Text>
       </View>
-
+      <Text style={styles.textobotao}>Nome do contato</Text>
       <TextInput
-        placeholder="Nome do contato"
+        placeholder="Digite o nome..."
         value={nome}
         onChangeText={setNome}
         style={styles.texto}
       />
+      <Text style={styles.textobotao}>Telefone</Text>
       <TextInput
-        placeholder="Telefone"
+        placeholder="(00)00000-0000"
         value={telefone}
         onChangeText={setTelefone}
         style={styles.texto}
       />
+      <Text style={styles.textobotao}>Email</Text>
       <TextInput
-        placeholder="Email"
+        placeholder="garfield@exemplo.com"
         value={email}
         onChangeText={setEmail}
         style={styles.texto}
       />
-      <Button title="Adicionar" onPress={adicionarContato} />
+      <Pressable style={styles.botaoadicionar} onPress={adicionarContato}><Text style={styles.textobotao}>Adicionar Contato</Text></Pressable>
 
       <FlatList
         data={contatos}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.lista}>
+            <Image style={styles.fotoperfil} source={require("./assets/garfield-icon.png")}/>
             <View style={{ flexDirection: "column" }}>
               <Text>{item.nome}</Text>
               <Text>{item.telefone}</Text>
@@ -113,22 +118,21 @@ export default function App() {
             </View>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <Pressable onPress={() => atualizarContato(item.id, 'Novo Nome', '(00)00000-0000', 'novo@email.com')}><Image style={{ width: 50, height: 50 }} source={require('./assets/garfield-edit.png')} /></Pressable>
+              <Pressable onPress={() => atualizarContato(item.id, 'Novo nome', '(00)00000-0000', 'novo@email.com')}><Image style={{ width: 50, height: 50 }} source={require('./assets/garfield-edit.png')} /></Pressable>
               <Pressable onPress={() => deletarContato(item.id)}><Image style={{ width: 40, height: 40 }} source={require('./assets/deletar.png')} /></Pressable>
             </View>
           </View>
         )}
       />
-    </View>
+    </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#ffe587ff",
+    backgroundColor: "moccasin",
   },
   logo: {
     flex: 1,
@@ -142,7 +146,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 30,
     marginTop: 20,
-    color: "#ffa502",
+    color: "darkorange",
   },
   lista: {
     flexDirection: "row",
@@ -154,10 +158,39 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   texto: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-    marginBottom: 10,
-    borderRadius: 5,
-  }
+    borderWidth: 2,
+    borderColor: "#FF9A00",
+    padding: 10,
+    marginBottom: 12,
+    borderRadius: 10,
+    backgroundColor: "#FFE587",
+    color: 'lightgray',
+    fontWeight: "bold",
+  },
+  textobotao: {
+    color: 'darkorange',
+    fontWeight: "bold",
+    fontSize: 15,
+  },
+  botaoadicionar: {
+    alignSelf: "center",
+    display: "flex",
+    backgroundColor: "#caeefeff",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    marginBottom: 15,
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 18,
+    width: 160,
+  },
+   fotoperfil: {
+    width: 55,
+    height: 55,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: "#FF9A00",
+    backgroundColor: "#FFF",
+  },
 });
